@@ -7,7 +7,7 @@ Prints text, images, or webcam photos on a USB ESC/POS thermal receipt printer (
 ```sh
 brew install libusb
 python3 -m venv .venv
-.venv/bin/pip install "python-escpos[usb]" opencv-python
+.venv/bin/pip install -r requirements.txt
 ```
 
 Plug in the printer, power it on, and check it shows up:
