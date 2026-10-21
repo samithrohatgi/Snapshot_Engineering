@@ -1,6 +1,7 @@
 appdirs==1.4.4
 argcomplete==3.7.2
 importlib_resources==7.1.0
+libusb-package==1.0.30.0; sys_platform == "win32"
 numpy==2.5.4
 opencv-python==5.0.0.93
 pillow==12.3.0

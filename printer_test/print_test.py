@@ -7,9 +7,12 @@ Usage:
   .venv/bin/python print_test.py --image photo.jpg   # print an image instead
   .venv/bin/python print_test.py --webcam            # snap a webcam photo and print it
   .venv/bin/python print_test.py --webcam --preview  # show what would print, don't print
+
+On Windows, replace .venv/bin/python with .venv/Scripts/python.exe.
 """
 
 import argparse
+import os
 import subprocess
 import sys
 import time
@@ -62,14 +65,31 @@ def printer_interface(dev):
   return None
 
 
-def find_printer(vid=None, pid=None):
+def get_usb_backend():
+  """Load the venv's bundled libusb on Windows; use PyUSB defaults elsewhere."""
+  if sys.platform != "win32":
+    return None
+  try:
+    import libusb_package
+  except ImportError:
+    sys.exit(
+      "Windows USB support needs libusb-package. Install it with:\n"
+      f'  "{sys.executable}" -m pip install -r requirements.txt'
+    )
+  backend = libusb_package.get_libusb1_backend()
+  if backend is None:
+    sys.exit("Could not load the bundled libusb DLL. Reinstall libusb-package for your Python architecture.")
+  return backend
+
+
+def find_printer(vid=None, pid=None, backend=None):
   if vid is not None and pid is not None:
-    dev = usb.core.find(idVendor=vid, idProduct=pid)
+    dev = usb.core.find(idVendor=vid, idProduct=pid, backend=backend)
     if dev is None:
       sys.exit(f"No USB device found with {vid:#06x}:{pid:#06x}. Run with --list to see what's connected.")
     return dev
 
-  devices = list(usb.core.find(find_all=True))
+  devices = list(usb.core.find(find_all=True, backend=backend))
   for dev in devices:
     if printer_interface(dev) is not None:
       return dev
@@ -124,9 +144,15 @@ def capture_webcam(index=0, countdown=3):
   """Grab one frame from the webcam as a PIL image, after a countdown."""
   cam = cv2.VideoCapture(index)
   if not cam.isOpened():
+    cam.release()
+    settings = (
+      "Windows Settings > Privacy & security > Camera (enable desktop app access)"
+      if sys.platform == "win32"
+      else "System Settings > Privacy & Security > Camera"
+    )
     sys.exit(
       f"Couldn't open camera {index}. Allow camera access for your terminal / VS Code in "
-      "System Settings > Privacy & Security > Camera, then try again."
+      f"{settings}, then try again."
     )
   try:
     # Keep reading frames while waiting so auto-exposure settles and the
@@ -175,7 +201,12 @@ def preview_image(source):
   path = CAPTURE_DIR / f"{datetime.now():%Y%m%d-%H%M%S}-preview.png"
   prepare_image(source).save(path)
   print(f"Saved preview {path}")
-  subprocess.run(["open", path])
+  if sys.platform == "win32":
+    os.startfile(path)
+  elif sys.platform == "darwin":
+    subprocess.run(["open", path], check=True)
+  else:
+    subprocess.run(["xdg-open", path], check=True)
 
 
 def take_photo(args):
@@ -206,17 +237,21 @@ def main():
     preview_image(take_photo(args) if args.webcam else args.image)
     return
 
+  backend = get_usb_backend()
   if args.list:
-    for dev in usb.core.find(find_all=True):
+    for dev in usb.core.find(find_all=True, backend=backend):
       tag = "  <- printer class" if printer_interface(dev) else ""
       print(describe(dev) + tag)
     return
 
-  dev = find_printer(args.vid, args.pid)
+  dev = find_printer(args.vid, args.pid, backend=backend)
   out_ep, in_ep = find_endpoints(dev)
   print(f"Using {describe(dev)}  (out_ep={out_ep:#04x}, in_ep={in_ep:#04x})")
+  # Reading the device name opens a handle. WinUSB allows only one connection,
+  # so release discovery's handle before python-escpos opens its own.
+  usb.util.dispose_resources(dev)
 
-  p = Usb(dev.idVendor, dev.idProduct, out_ep=out_ep, in_ep=in_ep)
+  p = Usb(dev.idVendor, dev.idProduct, usb_args={"backend": backend}, out_ep=out_ep, in_ep=in_ep)
   # The default profile doesn't know the paper width; without it, image() warns.
   p.profile.profile_data["media"]["width"]["pixels"] = PRINT_WIDTH_PX
   try:
