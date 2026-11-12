@@ -5,7 +5,6 @@ from unittest.mock import Mock, call
 import pytest
 from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import ClientError, NoCredentialsError
-
 from src.batch_uploader import BatchUploader
 from src.photo_store import PhotoStore
 
