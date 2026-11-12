@@ -3,7 +3,7 @@ from pathlib import Path
 
 class PhotoStore:
 
-    def __init__(self, path) -> None:
+    def __init__(self, path: str) -> None:
         self.photos = Path(path)
 
     def get_pending_photos(self) -> list[Path]:

@@ -2,7 +2,7 @@ import subprocess
 
 
 class NetworkChecker:
-    def __init__(self, network, system):
+    def __init__(self, network: str, system: str):
         self.network = network
         self.system = system
 
