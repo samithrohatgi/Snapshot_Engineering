@@ -33,8 +33,8 @@ class BatchUploader:
                 continue
             
             else:
+                continue
                 self.batch.delete_photo(photo)
-
 
 
 
