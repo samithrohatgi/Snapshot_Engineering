@@ -1,15 +1,19 @@
 import time
 from rpi_ws281x import PixelStrip, Color, ws
 
-LED_COUNT  = 144
+LED_COUNT  = 30          # originally 144 changed for testing
 LED_PIN    = 18
 BRIGHTNESS = 60          # 0-255, keep low while testing
 
 FLASH_EVERY = 10.0       # seconds between flash sequences
-FLASH_COUNT = 3
-FLASH_ON    = 0.15       # seconds white is on
-FLASH_OFF   = 0.15       # seconds between flashes
-FRAME_DELAY = 0.02       # lower = faster scrolling
+FLASH_COUNT = 3          # NOT USED ANYMORE
+FLASH_ON    = 0.15       # seconds white is on NOT USED ANYMORE
+FLASH_OFF   = 0.15       # seconds between flashes NOT USED ANYMORE
+FRAME_DELAY = 0.02       # lower = faster scrolling NOT USED ANYMORE
+
+BAR_STEP = 0.04       # seconds per LED (30 x 0.04 = ~1.2 s to fill)
+BAR_HOLD = 1.0        # seconds the full bar stays lit
+
 
 strip = PixelStrip(LED_COUNT, LED_PIN, 800000, 10, False, BRIGHTNESS, 0, ws.SK6812_STRIP_GRBW)
 strip.begin()
@@ -33,11 +37,12 @@ def idle_frame(shift):
     strip.show()
 
 def flash_white():
-    for _ in range(FLASH_COUNT):
-        fill(0, 0, 0, 255)                 # white flash
-        time.sleep(FLASH_ON)
-        fill(0, 0, 0, 0)
-        time.sleep(FLASH_OFF)
+    fill(0, 0, 0, 0)                          # idle off, all LEDs dark
+    for n in range(LED_COUNT):
+        strip.setPixelColor(n, WHITE)         # light the next LED
+        strip.show()
+        time.sleep(BAR_STEP)
+    time.sleep(BAR_HOLD)                      # bar stays full
 
 try:
     shift = 0
