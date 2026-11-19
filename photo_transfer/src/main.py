@@ -15,19 +15,12 @@ if __name__ == "__main__":
     poller = NetworkChecker(NETWORK, SYSTEM)
     uploader = BatchUploader(photos, BUCKET)
     camera = PhotoTaker(PHOTO_DIRECTORY)
-    # lights = IdleLights()
 
-    #lights.idle()
+    while True:
+        if True:
+            camera.take_photo()
 
-    try:
-        while True:
-            if True:
-                camera.take_photo()
+        if poller.poll():
+            uploader.upload()
 
-            if poller.poll():
-                uploader.upload()
-
-            time.sleep(10)
-
-    finally:
-        lights.stop()
+        time.sleep(10)
