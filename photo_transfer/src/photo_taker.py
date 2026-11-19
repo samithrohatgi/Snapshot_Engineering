@@ -13,6 +13,7 @@ class PhotoTaker:
         self.logs = logging.getLogger(__name__);
 
     def take_photo(self):
+        """Capture a photo. Returns its path, or None if the capture failed."""
         try:
             temporary_path = Path(self.storage_path) / f"{uuid.uuid4().hex}.tmp"
             subprocess.run(
@@ -22,7 +23,7 @@ class PhotoTaker:
                 check=True,
                 timeout=15,
             )
-            temporary_path.rename(temporary_path.with_suffix(".jpg"))
+            photo_path = temporary_path.rename(temporary_path.with_suffix(".jpg"))
 
         except subprocess.CalledProcessError as error:
             self.logs.error("Camera capture failed: %s", error.stderr)
@@ -40,12 +41,12 @@ class PhotoTaker:
             self.logs.exception("Operating system error during capture")
             return self._fail(temporary_path)
 
-        return True
+        return photo_path
 
 
     def _fail(self, temp_path: Path):
         temp_path.unlink(missing_ok = True)
-        return False
+        return None
         
 
 if __name__ == "__main__":
