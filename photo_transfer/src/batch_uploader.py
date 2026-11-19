@@ -1,6 +1,8 @@
 import logging
+from pathlib import Path
 
 import boto3
+from dotenv import load_dotenv
 from boto3.exceptions import S3UploadFailedError
 from botocore.exceptions import (
     BotoCoreError,
@@ -12,9 +14,10 @@ from .photo_store import PhotoStore
 
 class BatchUploader:
     def __init__(self, batch: PhotoStore, bucket: str):
+        load_dotenv(Path(__file__).resolve().parents[1] / ".env")
         self.batch = batch
-        self.client = boto3.client("s3", region_name="us-west-2")
-        self.logs = logging.getLogger(__name__);
+        self.client = boto3.client("s3", region_name="us-east-2")
+        self.logs = logging.getLogger(__name__)
         self.bucket = bucket
 
     def upload(self):
@@ -25,7 +28,7 @@ class BatchUploader:
                 self.client.upload_file(
                     Filename=str(photo),
                     Bucket=self.bucket,
-                    Key=photo.name
+                    Key=f"images/testing/{photo.name}",
                 )
             
             except (S3UploadFailedError, BotoCoreError, ClientError):
@@ -33,8 +36,7 @@ class BatchUploader:
                 continue
             
             else:
-                continue
-                self.batch.delete_photo(photo)
+                self.logs.info("Uploaded %s; keeping local photo", photo.name)
 
 
 

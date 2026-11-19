@@ -1,7 +1,7 @@
 PHOTO_DIRECTORY = "photos/"
 NETWORK = "UCLA_WEB"
 SYSTEM = "Pi"
-BUCKET = "placeholder"
+BUCKET = "snapshot-photo"
 
 LED_COUNT  = 144
 LED_PIN    = 18

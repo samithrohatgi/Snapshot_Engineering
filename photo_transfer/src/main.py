@@ -17,8 +17,6 @@ from .receipt_printer import ReceiptPrinter
 
 if __name__ == "__main__":
 
-    path = "placeholder/path"
-
     photos = PhotoStore(PHOTO_DIRECTORY)
     poller = NetworkChecker(NETWORK, SYSTEM)
     uploader = BatchUploader(photos, BUCKET)

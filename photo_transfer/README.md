@@ -96,7 +96,34 @@ python -m pip install -r requirements.txt
 python -m pip install -r requirements-dev.txt
 ```
 
-### 4. Run Tests
+### 4. Configure AWS and test an upload
+
+Copy `.env.example` to `.env` in this directory and fill in your AWS access key
+ID and secret access key. If you have temporary credentials, also add
+`AWS_SESSION_TOKEN`. Do not commit `.env`; it is ignored by Git.
+The uploader loads this file before creating its S3 client. Existing environment
+variables take precedence over values in `.env`.
+
+Confirm that the `snapshot-photo` bucket is in `us-east-2`, or update the region
+in `src/batch_uploader.py`. The credentials need `s3:PutObject` permission for
+`arn:aws:s3:::snapshot-photo/images/testing/*`.
+
+To test without Raspberry Pi camera or Wi-Fi dependencies, place a disposable
+`.jpg` file in `photos/` and run this from the `photo_transfer` directory:
+
+```bash
+python -c "import logging; logging.basicConfig(level=logging.INFO); from src.batch_uploader import BatchUploader; from src.photo_store import PhotoStore; from src.constants import BUCKET; BatchUploader(PhotoStore('photos'), BUCKET).upload()"
+```
+
+Check the S3 console under `snapshot-photo/images/testing/` to confirm the upload.
+No files are uploaded if `photos/` is empty or contains no `.jpg` files.
+Local photos are currently retained after upload for testing, so subsequent runs
+upload them again. Automatic deletion after upload is not currently enabled.
+
+`python -m src.main` runs the full Raspberry Pi workflow and requires its camera,
+LED dependencies, and configured Wi-Fi network.
+
+### 5. Run Tests
 
 Once tests have been implemented:
 

@@ -1,5 +1,6 @@
 
 import logging
+from pathlib import Path
 from unittest.mock import Mock, call
 
 import pytest
@@ -52,7 +53,7 @@ def test_upload_success(uploader, photos, mock_s3):
         call(
             Filename=str(photo),
             Bucket="test-photo-bucket",
-            Key=photo.name
+            Key=f"images/testing/{photo.name}"
         )
         for photo in photos
     ]
@@ -63,7 +64,7 @@ def test_upload_success(uploader, photos, mock_s3):
     )
 
     assert client.upload_file.call_count == 2
-    assert all(not photo.exists() for photo in photos)
+    assert all(photo.exists() for photo in photos)
 
 
 def test_empty_batch(uploader, photos, mock_s3):
@@ -122,8 +123,8 @@ def test_failed_upload(
     # Failed photo remains on disk for retry
     assert failed_photo.exists()
 
-    # Successful photo is deleted
-    assert not successful_photo.exists()
+    # Successful photos are retained during testing.
+    assert successful_photo.exists()
 
     # Failure was logged
     assert "UPLOAD FAILED" in caplog.text
@@ -136,7 +137,7 @@ def test_s3_client_configuration(mock_s3, store):
 
     factory.assert_called_once_with(
         "s3",
-        region_name="us-west-2"
+        region_name="us-east-2"
     )
 
 
@@ -147,3 +148,21 @@ def test_correct_bucket(uploader, mock_s3):
 
     for upload_call in client.upload_file.call_args_list:
         assert upload_call.kwargs["Bucket"] == "test-photo-bucket"
+
+
+def test_env_loaded_before_client_creation(monkeypatch, store, mock_s3):
+    from src import batch_uploader
+
+    _, factory = mock_s3
+    calls = Mock()
+    loader = Mock()
+    monkeypatch.setattr(batch_uploader, "load_dotenv", loader)
+    calls.attach_mock(loader, "load_env")
+    calls.attach_mock(factory, "create_client")
+
+    BatchUploader(store, "test-photo-bucket")
+
+    assert calls.mock_calls == [
+        call.load_env(Path(batch_uploader.__file__).resolve().parents[1] / ".env"),
+        call.create_client("s3", region_name="us-east-2"),
+    ]
