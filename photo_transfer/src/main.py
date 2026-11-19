@@ -26,7 +26,9 @@ if __name__ == "__main__":
     printer = ReceiptPrinter(PRINTER_VENDOR_ID, PRINTER_PRODUCT_ID)
     # lights = IdleLights()
 
-    #lights.idle()
+    while True:
+        if True:
+            camera.take_photo()
 
     try:
         while True:
@@ -35,11 +37,7 @@ if __name__ == "__main__":
                 if photo is not None:
                     # print_image dithers the photo for thermal paper, then prints it.
                     printer.print_image(photo)
+        if poller.poll():
+            uploader.upload()
 
-            if poller.poll():
-                uploader.upload()
-
-            time.sleep(10)
-
-    finally:
-        lights.stop()
+        time.sleep(10)
