@@ -9,7 +9,7 @@ FLASH_EVERY = 10.0       # seconds between flash sequences
 FLASH_COUNT = 3          # NOT USED ANYMORE
 FLASH_ON    = 0.15       # seconds white is on NOT USED ANYMORE
 FLASH_OFF   = 0.15       # seconds between flashes NOT USED ANYMORE
-FRAME_DELAY = 0.02       # lower = faster scrolling NOT USED ANYMORE
+FRAME_DELAY = 0.02       # lower = faster scrolling 
 
 BAR_STEP = 0.04       # seconds per LED (30 x 0.04 = ~1.2 s to fill)
 BAR_HOLD = 1.0        # seconds the full bar stays lit
@@ -39,7 +39,7 @@ def idle_frame(shift):
 def flash_white():
     fill(0, 0, 0, 0)                          # idle off, all LEDs dark
     for n in range(LED_COUNT):
-        strip.setPixelColor(n, WHITE)         # light the next LED
+        strip.setPixelColor(n, Color(0, 0, 0, 255))         # light the next LED
         strip.show()
         time.sleep(BAR_STEP)
     time.sleep(BAR_HOLD)                      # bar stays full
