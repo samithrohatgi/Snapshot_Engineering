@@ -24,20 +24,15 @@ if __name__ == "__main__":
     uploader = BatchUploader(photos, BUCKET)
     camera = PhotoTaker(PHOTO_DIRECTORY)
     printer = ReceiptPrinter(PRINTER_VENDOR_ID, PRINTER_PRODUCT_ID)
-    # lights = IdleLights()
 
     while True:
         if True:
-            camera.take_photo()
+            photo = camera.take_photo()
+            if photo is not None:
+                # print_image dithers the photo for thermal paper, then prints it.
+                printer.print_image(photo)
 
-    try:
-        while True:
-            if True:
-                photo = camera.take_photo()
-                if photo is not None:
-                    # print_image dithers the photo for thermal paper, then prints it.
-                    printer.print_image(photo)
         if poller.poll():
             uploader.upload()
 
-        time.sleep(10)
+        time.sleep(30)
