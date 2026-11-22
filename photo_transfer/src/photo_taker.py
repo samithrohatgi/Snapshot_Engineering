@@ -17,7 +17,7 @@ class PhotoTaker:
         try:
             temporary_path = Path(self.storage_path) / f"{uuid.uuid4().hex}.tmp"
             subprocess.run(
-                ["rpicam-still", "-n", "-t", "2000", "--encoding", "jpg", "-o", str(temporary_path)],
+                ["rpicam-still", "-n", "-t", "500", "--encoding", "jpg", "-o", str(temporary_path)],
                 capture_output=True, 
                 text=True,
                 check=True,

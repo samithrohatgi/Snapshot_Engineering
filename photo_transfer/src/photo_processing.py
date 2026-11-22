@@ -24,7 +24,7 @@ from .constants import PRINT_WIDTH_PX
 # come out darker than the file: 128 gave ~50% black dots but printed ~70% dark.
 # 180 gives ~31% black dots. Raise it to print lighter, lower it for darker.
 TARGET_MEAN = 220
-TARGET_STD = 55
+TARGET_STD = 45
 # Caps the contrast boost, so a near-black or flat photo comes out dim
 # instead of turning into amplified sensor noise.
 MAX_GAIN = 2.0
