@@ -1,3 +1,4 @@
+import subprocess
 import time
 
 from .batch_uploader import BatchUploader
@@ -40,10 +41,6 @@ if __name__ == "__main__":
     if photo is not None:
         printer.print_image(photo)
 
-    if poller.poll():
-        uploader.upload()
-
-    
     photo2 = camera.take_photo()
 
     if photo2 is not None:
@@ -51,3 +48,9 @@ if __name__ == "__main__":
         
     if poller.poll():
         uploader.upload()
+
+    time.sleep(15)
+    subprocess.run(        
+        ["sudo", "-n", "/usr/bin/systemctl", "poweroff"], 
+        check=True,
+    )
