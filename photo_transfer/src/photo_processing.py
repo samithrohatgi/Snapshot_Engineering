@@ -22,14 +22,14 @@ from .constants import PRINT_WIDTH_PX
 # The mean sits well above mid-gray (128) because printed dots spread and
 # come out darker than the file: 128 gave ~50% black dots but printed ~70% dark.
 # 180 gives ~31% black dots. Raise it to print lighter, lower it for darker.
-TARGET_MEAN = 180
+TARGET_MEAN = 195
 TARGET_STD = 64
 # Caps the contrast boost, so a near-black or flat photo comes out dim
 # instead of turning into amplified sensor noise.
-MAX_GAIN = 4.0
+MAX_GAIN = 2.0
 
 # Dither grid size: each dithered pixel prints as an N x N block of dots.
-DITHER_PIXEL_SIZE = 2
+DITHER_PIXEL_SIZE = 1
 
 # Error diffusion kernels as (dx, dy, weight) offsets from the current pixel.
 # Each pixel's rounding error is pushed onto neighbors not yet visited.
