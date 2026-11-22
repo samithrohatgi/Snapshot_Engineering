@@ -122,4 +122,4 @@ class IdleLights:
                 return
 
 if __name__ == "__main__":
-    _flash_white()
+    idle()
