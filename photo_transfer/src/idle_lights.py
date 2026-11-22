@@ -120,3 +120,6 @@ class IdleLights:
             self._fill(0, 0, 0, 0)
             if self._stop_event.wait(FLASH_OFF):
                 return
+
+if __name__ == "__main__":
+    _flash_white()
