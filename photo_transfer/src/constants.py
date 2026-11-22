@@ -3,7 +3,7 @@ NETWORK = "UCLA_WEB"
 SYSTEM = "Pi"
 BUCKET = "snapshot-photo"
 
-LED_COUNT  = 144
+LED_COUNT  = 35
 LED_PIN    = 18
 BRIGHTNESS = 60          # 0-255, keep low while testing
 
