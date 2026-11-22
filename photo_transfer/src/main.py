@@ -21,16 +21,33 @@ if __name__ == "__main__":
     poller = NetworkChecker(NETWORK, SYSTEM)
     uploader = BatchUploader(photos, BUCKET)
     camera = PhotoTaker(PHOTO_DIRECTORY)
-    #printer = ReceiptPrinter(PRINTER_VENDOR_ID, PRINTER_PRODUCT_ID)
+    printer = ReceiptPrinter(PRINTER_VENDOR_ID, PRINTER_PRODUCT_ID)
 
-    while True:
-        if True:
-            photo = camera.take_photo()
-            #if photo is not None:
-                # print_image dithers the photo for thermal paper, then prints it.
-                #printer.print_image(photo)
+    # while True:
+    #     if True:
+    #         photo = camera.take_photo()
+    #         if photo is not None:
+    #             #print_image dithers the photo for thermal paper, then prints it.
+    #             printer.print_image(photo)
 
-        if poller.poll():
-            uploader.upload()
+    #     if poller.poll():
+    #         uploader.upload()
 
-        time.sleep(30)
+    #     time.sleep(30)
+
+    photo = camera.take_photo()
+
+    if photo is not None:
+        printer.print_image(photo)
+
+    if poller.poll():
+        uploader.upload()
+
+    
+    photo2 = camera.take_photo()
+
+    if photo2 is not None:
+        printer.print_image(photo2)
+        
+    if poller.poll():
+        uploader.upload()
