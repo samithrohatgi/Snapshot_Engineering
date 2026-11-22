@@ -57,3 +57,6 @@ try:
             last_flash = time.monotonic()   # restart timer
 except KeyboardInterrupt:
     fill(0, 0, 0, 0)                       # lights off on Ctrl+C
+
+if __name__ == "__main__":
+    flash_white()
