@@ -3,7 +3,8 @@
 Pipeline: photo -> resize -> grayscale -> exposure correction -> dither -> result
 
 Usage:
-  .venv/bin/python photo_processing.py INPUT OUTPUT [floyd-steinberg|atkinson|random] [--pixel-size N]
+  .venv/bin/python photo_processing.py INPUT OUTPUT [METHOD] [--pixel-size N]
+  METHOD: floyd-steinberg (Pillow, default), floyd-steinberg-python, atkinson, or random.
 """
 
 import argparse
@@ -34,7 +35,7 @@ DITHER_PIXEL_SIZE = 2
 # Each pixel's rounding error is pushed onto neighbors not yet visited.
 KERNELS = {
   # Spreads all of the error: smooth gradients, the standard choice.
-  "floyd-steinberg": [
+  "floyd-steinberg-python": [
     (1, 0, 7 / 16),
     (-1, 1, 3 / 16), (0, 1, 5 / 16), (1, 1, 1 / 16),
   ],
@@ -50,7 +51,7 @@ KERNELS = {
 # Every dither method: the error diffusion kernels above, plus "random", where
 # each pixel is black with a probability set by how dark it is. Random gives a
 # film-grain look with no patterns, but loses more fine detail.
-METHODS = [*KERNELS, "random"]
+METHODS = ["floyd-steinberg", *KERNELS, "random"]
 
 
 def resize_to_width(photo, width=PRINT_WIDTH_PX):
@@ -88,7 +89,8 @@ def correct_exposure(gray, target_mean=TARGET_MEAN, target_std=TARGET_STD):
 def dither(gray, method="floyd-steinberg", pixel_size=DITHER_PIXEL_SIZE):
   """Return a black and white (mode "1") dithered copy of a grayscale image.
 
-  method is one of METHODS: an error diffusion kernel name or "random".
+  Floyd-Steinberg uses Pillow by default; "floyd-steinberg-python" selects
+  the original implementation.
   pixel_size sets the dither grid: each dithered pixel prints as a
   pixel_size x pixel_size block of dots. 1 dithers every dot; larger values
   give a coarser, bolder pattern. The output is the same size as the input.
@@ -96,18 +98,26 @@ def dither(gray, method="floyd-steinberg", pixel_size=DITHER_PIXEL_SIZE):
   if pixel_size < 1:
     raise ValueError("pixel_size must be at least 1")
   # Average each block down to a single pixel; it gets scaled back up below.
-  small = gray.resize(
-    (ceil(gray.width / pixel_size), ceil(gray.height / pixel_size)), Image.BOX
-  )
-  pixels = np.asarray(small, dtype=np.float32)
-  if method == "random":
-    out = random_threshold(pixels)
+  small = gray
+  if pixel_size > 1:
+    small = gray.resize(
+      (ceil(gray.width / pixel_size), ceil(gray.height / pixel_size)), Image.BOX
+    )
+  if method == "floyd-steinberg":
+    bitmap = small.convert("1", dither=Image.Dither.FLOYDSTEINBERG)
   else:
-    out = error_diffusion(pixels, KERNELS[method])
+    pixels = np.asarray(small, dtype=np.float32)
+    if method == "random":
+      out = random_threshold(pixels)
+    else:
+      out = error_diffusion(pixels, KERNELS[method])
+    bitmap = Image.fromarray(out)
 
   # Blow each dithered pixel up into a solid block, trimmed to the input size.
-  blocks = out.repeat(pixel_size, axis=0).repeat(pixel_size, axis=1)
-  return Image.fromarray(blocks[:gray.height, :gray.width])
+  if pixel_size == 1:
+    return bitmap
+  blocks = bitmap.resize((small.width * pixel_size, small.height * pixel_size), Image.Resampling.NEAREST)
+  return blocks.crop((0, 0, gray.width, gray.height))
 
 
 def random_threshold(pixels):
