@@ -1,5 +1,5 @@
 PHOTO_DIRECTORY = "photos/"
-NETWORK = "UCLA_WEB"
+NETWORK = "samith’s iphone"
 SYSTEM = "Pi"
 BUCKET = "snapshot-photo"
 

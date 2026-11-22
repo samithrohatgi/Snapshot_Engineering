@@ -1,4 +1,3 @@
-import subprocess
 import time
 
 from .batch_uploader import BatchUploader
@@ -50,7 +49,4 @@ if __name__ == "__main__":
         uploader.upload()
 
     time.sleep(15)
-    subprocess.run(        
-        ["sudo", "-n", "/usr/bin/systemctl", "poweroff"], 
-        check=True,
-    )
+
